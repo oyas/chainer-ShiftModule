@@ -18,10 +18,12 @@ class BottleNeckA(chainer.Chain):
         with self.init_scope():
             self.conv1 = L.Convolution2D(
                 in_size, ch, 1, stride, 0, initialW=initialW, nobias=True)
+            #self.conv1 = ShiftModule(
+            #    in_size, in_size, ch, 1, stride, initialW=initialW, nobias=True)
             self.bn1 = L.BatchNormalization(ch)
             self.conv2 = L.Convolution2D(
                 ch, ch, 3, 1, 1, initialW=initialW, nobias=True)
-            #self.conv2 = models.ShiftModule.ShiftModule(ch)
+            #self.conv2 = ShiftModule(ch, ch*4, ch, 3, 1, initialW=initialW, nobias=True)
             self.bn2 = L.BatchNormalization(ch)
             self.conv3 = L.Convolution2D(
                 ch, out_size, 1, 1, 0, initialW=initialW, nobias=True)
@@ -73,7 +75,7 @@ class Block(chainer.ChainList):
         self.add_link(BottleNeckA(in_size, ch, out_size, stride))
         for i in range(layer - 1):
             if shift:
-                self.add_link(ShiftModule(out_size, ex_ch, out_size, ksize=(3,3), dilate=2, pre_shift=True))
+                self.add_link(ShiftModule(out_size, ex_ch, out_size, ksize=3, dilate=2, pre_shift=True))
             else:
                 self.add_link(BottleNeckB(out_size, ch))
 

@@ -17,11 +17,15 @@ class ShiftModule(chainer.Chain):
 
     def __init__(self, in_channels, mid_channels, out_channels, ksize=3, stride=1, dilate=1,
                 nobias=False, initialW=None, initial_bias=None, pre_shift=False):
+        '''
+            Args:
+                mid_channels(int): mid_channels = (expansion rate) * in_channels
+        '''
         super(ShiftModule, self).__init__()
 
         self.in_channels  = in_channels
         self.out_channels = out_channels
-        assert stride == 1, 'Downsampling is not implemented'
+        self.stride = stride
 
         if self.in_channels*2 == self.out_channels:
             out_ch = in_channels
@@ -57,6 +61,9 @@ class ShiftModule(chainer.Chain):
 
         h = F.relu(self.post_bn(h))
         h = self.post_conv(h)
+
+        if self.stride > 1:
+            x = F.average_pooling_2d(x, ksize=self.stride, stride=self.stride)
 
         if self.in_channels == self.out_channels:
             h = h + x
@@ -98,10 +105,20 @@ class ShiftOperation(chainer.Chain):
         return channelwise_shift(x, self.degree)
 
 
+def _pair(x):
+    if hasattr(x, '__getitem__'):
+        return x
+    return x, x
+
+
+#
+# When using CPU, replace ShiftOperation() by old_ShiftOperation()
+#
+
 class old_ShiftOperation(chainer.Chain):
 
     def __init__(self, ksize=3, dilate=1):
-        super(ShiftOperation, self).__init__()
+        super(old_ShiftOperation, self).__init__()
         self.ksize = _pair(ksize)
         self.dilate = _pair(dilate)
 
@@ -184,9 +201,3 @@ def pad_shift(x, axis, degree):
     x = F.pad(x, pd, 'constant')
 
     return x
-
-
-def _pair(x):
-    if hasattr(x, '__getitem__'):
-        return x
-    return x, x
