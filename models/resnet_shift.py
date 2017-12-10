@@ -6,7 +6,7 @@ import chainer.functions as F
 from chainer import initializers
 import chainer.links as L
 
-import models.ShiftModule
+from ShiftModule import ShiftModule
 
 
 class BottleNeckA(chainer.Chain):
@@ -73,7 +73,7 @@ class Block(chainer.ChainList):
         self.add_link(BottleNeckA(in_size, ch, out_size, stride))
         for i in range(layer - 1):
             if shift:
-                self.add_link(models.ShiftModule.ShiftModule(out_size, ex_ch, out_size, ksize=(3,3), dilate=2, pre_shift=True))
+                self.add_link(ShiftModule(out_size, ex_ch, out_size, ksize=(3,3), dilate=2, pre_shift=True))
             else:
                 self.add_link(BottleNeckB(out_size, ch))
 

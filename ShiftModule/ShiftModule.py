@@ -10,7 +10,7 @@ import chainer
 import chainer.functions as F
 import chainer.links as L
 
-from models.ChannelWiseShift import channelwise_shift
+from ShiftModule.ChannelWiseShift import channelwise_shift
 
 
 class ShiftModule(chainer.Chain):

@@ -13,4 +13,5 @@ Reference:
 
 replace to
 
-	ShiftModule(in_ch, in_ch*2, out_ch, ksize=3)
+	from ShiftModule import ShiftModule
+	ShiftModule(in_ch, mid_ch, out_ch, ksize=3)

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # coding: utf-8
 
 import numpy
@@ -39,7 +38,7 @@ def channelwise_shift_function(x, degree=None):
 
         Args:
             x(array): input image
-            degree(array): list of tuple of shift degree; [(dy,dx), ...]
+            degree(array): list of shift degree; [[dy,dx], ...]
 
         Returns:
             array: shifted image
