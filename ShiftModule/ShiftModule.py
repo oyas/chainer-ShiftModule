@@ -98,7 +98,7 @@ class ShiftOperation(chainer.Chain):
         return channelwise_shift(x, self.degree)
 
 
-class _ShiftOperation(chainer.Chain):
+class old_ShiftOperation(chainer.Chain):
 
     def __init__(self, ksize=3, dilate=1):
         super(ShiftOperation, self).__init__()

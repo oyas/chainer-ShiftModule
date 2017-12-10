@@ -62,9 +62,9 @@ def main():
     train = AugmentedDataset(train)
 
     if args.model == 'resnet':
-        model = models.resnet_shift.ResNet(False)
+        model = models.resnet_shift.ResNet(False, class_labels)
     if args.model == 'shift':
-        model = models.resnet_shift.ResNet(True)
+        model = models.resnet_shift.ResNet(True, class_labels)
     if args.gpu >= 0:
         chainer.cuda.get_device_from_id(args.gpu).use()
         model.to_gpu()  # Copy the model to the GPU

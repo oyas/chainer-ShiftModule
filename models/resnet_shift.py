@@ -85,7 +85,7 @@ class Block(chainer.ChainList):
 
 class ResNet(chainer.Chain):
 
-    def __init__(self, shift=False):
+    def __init__(self, shift=False, out_ch=10):
         super(ResNet, self).__init__()
         with self.init_scope():
             self.conv1 = L.Convolution2D(
@@ -101,7 +101,7 @@ class ResNet(chainer.Chain):
                 self.res3 = Block(3, 32, 16, 64, shift=shift)
                 self.res4 = Block(3, 64, 32, 128, shift=shift)
                 self.res5 = Block(3, 128,64, 128, shift=shift)
-            self.fc = L.Linear(None, 10)
+            self.fc = L.Linear(None, out_ch)
 
     def __call__(self, x, t):
         h = self.bn1(self.conv1(x))
