@@ -19,6 +19,7 @@ class ShiftModule(chainer.Chain):
                 nobias=False, initialW=None, initial_bias=None, pre_shift=False):
         '''
             Args:
+                in_channels(int) : input channels. Not allow to set 'None'.
                 mid_channels(int): mid_channels = (expansion rate) * in_channels
         '''
         super(ShiftModule, self).__init__()
@@ -26,6 +27,7 @@ class ShiftModule(chainer.Chain):
         self.in_channels  = in_channels
         self.out_channels = out_channels
         self.stride = stride
+        self.pre_shift = pre_shift
 
         if self.in_channels*2 == self.out_channels:
             out_ch = in_channels
@@ -34,9 +36,7 @@ class ShiftModule(chainer.Chain):
 
         with self.init_scope():
             if pre_shift:
-                self.pre_shift = ShiftOperation(ksize, dilate)
-            else:
-                self.pre_shift = None
+                self.pre_shift_ope = ShiftOperation(ksize, dilate)
 
             self.pre_bn    = L.BatchNormalization(in_channels)
             self.pre_conv  = L.Convolution2D(in_channels, mid_channels, ksize=1,
@@ -52,7 +52,7 @@ class ShiftModule(chainer.Chain):
         h = x
 
         if self.pre_shift:
-            h = self.pre_shift(h)
+            h = self.pre_shift_ope(h)
 
         h = F.relu(self.pre_bn(h))
         h = self.pre_conv(h)
@@ -68,9 +68,20 @@ class ShiftModule(chainer.Chain):
         if self.in_channels == self.out_channels:
             h = h + x
         elif self.in_channels*2 == self.out_channels:
-            h = F.concat(h, x)
+            h = F.concat([h, x])
 
         return h
+
+
+class ShiftConv(ShiftModule):
+
+    def __init__(self, in_channels, out_channels, ksize=3, stride=1, dilate=1,
+                 nobias=False, initialW=None, initial_bias=None,
+                 expansion=3, pre_shift=False):
+        mid_channels = expansion * in_channels
+        super(ShiftConv, self).__init__(
+                in_channels, mid_channels, out_channels, ksize, stride, dilate,
+                nobias, initialW, initial_bias, pre_shift)
 
 
 class ShiftOperation(chainer.Chain):
@@ -90,8 +101,10 @@ class ShiftOperation(chainer.Chain):
             for x in range(-dw, kw-dw, self.dilate[1])
         ]
 
+        self.not_build = True
+
     def __call__(self, x):
-        if self.degree is None:
+        if self.not_build:
             b, ch, h, w = x.shape
             gs = ch // len(self.kernel)  # group size
             assert gs > 0, 'channel size is too fewer than kernel size'
@@ -101,6 +114,8 @@ class ShiftOperation(chainer.Chain):
                 dx, dy = self.kernel[i]
                 self.degree[gs*i:gs*(i+1), 0] = dy
                 self.degree[gs*i:gs*(i+1), 1] = dx
+
+            self.not_build = False
 
         return channelwise_shift(x, self.degree)
 
