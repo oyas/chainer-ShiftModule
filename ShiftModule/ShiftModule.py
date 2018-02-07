@@ -57,7 +57,7 @@ class ShiftModule(chainer.Chain):
         h = F.relu(self.pre_bn(h))
         h = self.pre_conv(h)
 
-        h = self.shift(h)
+        h = self.shift(h)  # When using chainer v4.0.0b3, you can replace by F.shift()
 
         h = F.relu(self.post_bn(h))
         h = self.post_conv(h)
@@ -83,6 +83,10 @@ class ShiftConv(ShiftModule):
                 in_channels, mid_channels, out_channels, ksize, stride, dilate,
                 nobias, initialW, initial_bias, pre_shift)
 
+#
+# Shift Operataion
+# This is the same as Shift function in Chainer v4.0.0b3.
+#
 
 class ShiftOperation(chainer.Chain):
 
